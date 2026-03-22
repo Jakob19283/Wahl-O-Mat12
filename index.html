@@ -231,49 +231,58 @@ function drawCompass(){
     const canvas = document.getElementById("compass");
     const ctx = canvas.getContext("2d");
 
-    // 👉 dynamische Größe
+    // Dynamische Größe
     canvas.width = canvas.offsetWidth;
     canvas.height = canvas.offsetWidth;
-    ctx.clearRect(0,0,400,400);
+
+    const size = canvas.width;
+    const center = size / 2;
+    const scale = size / 40; // Skalierung anpassen
+
+    ctx.clearRect(0, 0, size, size);
 
     // Achsen
     ctx.beginPath();
-    ctx.moveTo(200,0);
-    ctx.lineTo(200,400);
-    ctx.moveTo(0,200);
-    ctx.lineTo(400,200);
+    ctx.moveTo(center, 0);
+    ctx.lineTo(center, size);
+    ctx.moveTo(0, center);
+    ctx.lineTo(size, center);
     ctx.stroke();
 
     // Parteien
     parties.forEach(p=>{
-        let x = 200 + p.x*10;
-        let y = 200 - p.y*10;
+        let x = center + p.x * scale;
+        let y = center - p.y * scale;
+
         ctx.fillStyle = p.color;
         ctx.beginPath();
-        ctx.arc(x,y,6,0,Math.PI*2);
+        ctx.arc(x, y, 6, 0, Math.PI * 2);
         ctx.fill();
-        ctx.fillText(p.name,x+8,y);
+
+        ctx.fillText(p.name, x + 6, y);
     });
 
-    // Spielerpunkt
-    let px = 200 + pos.x*10;
-    let py = 200 - pos.y*10;
+    // Spieler
+    let px = center + pos.x * scale;
+    let py = center - pos.y * scale;
+
     ctx.fillStyle = "black";
     ctx.beginPath();
-    ctx.arc(px,py,8,0,Math.PI*2);
+    ctx.arc(px, py, 8, 0, Math.PI * 2);
     ctx.fill();
 
-    // Achsenlabels
-    ctx.fillText("Links",10,210);
-    ctx.fillText("Rechts",350,210);
-    ctx.fillText("Autoritär",210,20);
-    ctx.fillText("Demokratisch",210,390);
+    // Labels (angepasst!)
+    ctx.fillText("Links", 10, center + 5);
+    ctx.fillText("Rechts", size - 60, center + 5);
+    ctx.fillText("Autoritär", center + 5, 15);
+    ctx.fillText("Libertär", center + 5, size - 10);
 
     // Nächste Partei
     let closest = parties.reduce((a,b)=>{
         return distance(pos,a)<distance(pos,b)?a:b;
     });
-    ctx.fillText("Nächste Partei: "+closest.name,120,380);
+
+    ctx.fillText("Nächste: " + closest.name, 10, size - 25);
 }
 function updateProgress() {
     let percent = (currentQuestion / questions.length) * 100;
