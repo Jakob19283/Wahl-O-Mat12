@@ -173,18 +173,7 @@ const parties = [
     { name: "RAP", x: 5, y: 12, color: "red" },
     { name: "MDU", x: 3, y: -12, color: "purple" }
 ];
-// Quadranten einfärben
-ctx.fillStyle = "#e3f2fd"; // oben links
-ctx.fillRect(0, 0, center, center);
 
-ctx.fillStyle = "#ffebee"; // oben rechts
-ctx.fillRect(center, 0, center, center);
-
-ctx.fillStyle = "#e8f5e9"; // unten links
-ctx.fillRect(0, center, center, center);
-
-ctx.fillStyle = "#fffde7"; // unten rechts
-ctx.fillRect(center, center, center, center);
 function showQuestion(){
     const quiz = document.getElementById("quiz");
     const status = document.getElementById("status");
@@ -237,7 +226,19 @@ function showQuestion(){
 
     drawCompass(); // Diagramm beim Anzeigen der Frage
 }
+// Quadranten einfärben
+ctx.fillStyle = "#e3f2fd"; // oben links
+ctx.fillRect(0, 0, center, center);
 
+ctx.fillStyle = "#ffebee"; // oben rechts
+ctx.fillRect(center, 0, center, center);
+
+ctx.fillStyle = "#e8f5e9"; // unten links
+ctx.fillRect(0, center, center, center);
+
+ctx.fillStyle = "#fffde7"; // unten rechts
+ctx.fillRect(center, center, center, center);
+    
 function drawCompass(){
     const canvas = document.getElementById("compass");
     const ctx = canvas.getContext("2d");
