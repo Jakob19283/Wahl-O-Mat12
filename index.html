@@ -4,6 +4,21 @@
 <meta charset="UTF-8">
 <title>Politischer Kompass - zur Verfügung gestellt von der LDP</title>
 <style>
+    #progress-container {
+        width: 100%;
+        height: 20px;
+        background: #ddd;
+        border-radius: 10px;
+        margin: 20px 0;
+        overflow: hidden;
+    }
+
+    #progress-bar {
+        height: 100%;
+        width: 0%;
+        background: #4caf50;
+        transition: width 0.3s;
+    }
     body {
         font-family: Arial;
         background: #000080;
@@ -46,6 +61,9 @@
 <img src="https://visitor-badge.laobi.icu/badge?page_id=Jakob19283.Wahl-O-Mat12" alt="Visitor Count" />
 <div class="container">
     <h1>Politischer Kompass</h1>
+    <div id="progress-container">
+        <div id="progress-bar"></div>
+    </div>
     <div id="quiz"></div>
     <div id="status"></div>
     <canvas id="compass" width="400" height="400"></canvas>
@@ -154,6 +172,8 @@ function showQuestion(){
     const quiz = document.getElementById("quiz");
     const status = document.getElementById("status");
     quiz.innerHTML = "";
+    status.innerHTML = `Frage ${currentQuestion+1}/${questions.length}`;
+    updateProgress();
 
     // Fortschritt
     status.innerHTML = `Frage ${currentQuestion+1}/${questions.length} | Aktuelle Ausrichtung: X=${pos.x}, Y=${pos.y}`;
@@ -245,7 +265,10 @@ function drawCompass(){
     });
     ctx.fillText("Nächste Partei: "+closest.name,120,380);
 }
-
+function updateProgress() {
+    let percent = (currentQuestion / questions.length) * 100;
+    document.getElementById("progress-bar").style.width = percent + "%";
+}
 function distance(p1,p2){
     return Math.sqrt((p1.x-p2.x)**2+(p1.y-p2.y)**2);
 }
