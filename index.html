@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Politischer Kompass - zur Verfügung gestellt von der LDP</title>
+<style>
+    body {
+        font-family: Arial;
+        background: #f4f6f8;
+        text-align: center;
+    }
+
+    .container {
+        max-width: 700px;
+        margin: 40px auto;
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+    }
+
+    button {
+        display: block;
+        width: 100%;
+        margin: 8px 0;
+        padding: 10px;
+        border: none;
+        border-radius: 8px;
+        background: #e0e6ed;
+        cursor: pointer;
+    }
+
+    #status {
+        margin: 15px 0;
+        font-weight: bold;
+    }
+
+    canvas {
+        margin-top: 20px;
+        border: 1px solid #ccc;
+    }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Politischer Kompass</h1>
+    <div id="quiz"></div>
+    <div id="status"></div>
+    <canvas id="compass" width="400" height="400"></canvas>
+</div>
+
+<script>
+// 10 Fragen mit Platzhaltern
+const questions = [
+    {
+        text: "Ich respektiere die Meinungsfreiheit",
+        answers: [
+            { text: "Ich stimme zu", x: 0, y: -2 },
+            { text: "Ich stimme nicht zu", x: 0, y: 2 },
+            { text: "Ich habe hierzu keine Meinung", x: 0, y: 0 }
+        ]
+    },
+    {
+        text: "Ich glaube, dass man Freiheiten zum Schutze dritter einschränken darf",
+        answers: [
+            { text: "Ich stimme zu", x: 0, y: 1 },
+            { text: "Ich stimme nicht zu", x: 0, y: -1 },
+            { text: "Ich habe hierzu keine Meinung", x: 0, y: 0 }
+        ]
+    },
+    {
+        text: "Minderheiten haben dieselben Rechte wie Mehrheiten",
+        answers: [
+            { text: "Ich stimme zu", x: 0, y: -1 },
+            { text: "Ich stimme nicht zu", x: 0, y: 1 },
+            { text: "Ich habe hierzu keine Meinung", x: 0, y: 0 }
+        ]
+    },
+    {
+        text: "Der Zweck heiligt die Mittel",
+        answers: [
+            { text: "Ich stimme zu", x: 0, y: 1 },
+            { text: "Ich stimme nicht zu", x: 0, y: -1 },
+            { text: "Ich habe hierzu keine Meinung", x: 0, y: 0 }
+        ]
+    },
+    {
+        text: "Ich halte die Demokratie für die beste Staatsform" ,
+        answers: [
+            { text: "Ich stimme zu", x: 0, y: -2 },
+            { text: "Ich stimme nicht zu", x: 0, y: 2 },
+            { text: "Ich habe hierzu keine Meinung", x: 0, y: 0 }
+        ]
+    },
+    {
+        text: "Ich beführworte die Umverteilung von reich zu arm",
+        answers: [
+            { text: "Ich stimme zu", x: -1, y: 0 },
+            { text: "Ich stimme nicht zu", x: 1, y: 0 },
+            { text: "Ich habe hierzu keine Meinung", x: 0, y: 0 }
+        ]
+    },
+    {
+        text: "Steuern müssen minimiert werden",
+        answers: [
+            { text: "Ich stimme zu", x: 1, y: 0 },
+            { text: "Ich stimme nicht zu", x: -1, y: 0 },
+            { text: "Ich habe hierzu keine Meinung", x: 0, y: 0 }
+        ]
+    },
+    {
+        text: "Der Markt funktioniert im Großen und Ganzen sehr gut",
+        answers: [
+            { text: "Ich stimme zu", x: 1, y: 0 },
+            { text: "Ich stimme nicht zu", x: -1, y: 0 },
+            { text: "Ich habe hierzu keine Meinung", x: 0, y: 0 }
+        ]
+    },
+    {
+        text: "Jeder kann durch Fleiß sehr viel Geld verdienen",
+        answers: [
+            { text: "Ich stimme zu", x: 1, y: 0 },
+            { text: "Ich stimme nicht zu", x: -1, y: 0 },
+            { text: "Ich habe hierzu keine Meinung", x: 0, y: 0 }
+        ]
+    },
+    {
+        text: "Der Kommunismus ist vom Prinzip her eine gute Idee",
+        answers: [
+            { text: "Ich stimme zu", x: -2, y: 0 },
+            { text: "Ich stimme nicht zu", x: 2, y: 0 },
+            { text: "Ich habe hierzu keine Meinung", x: 0, y: 0 }
+        ]
+    }
+];
+
+let currentQuestion = 0;
+let pos = { x: 0, y: 0 };
+let history = []; // für Zurück-Button
+
+// Parteien-Punkte (fest)
+const parties = [
+    { name: "LDP", x: 0, y: -8, color: "blue" },
+    { name: "APN", x: -8, y: -14, color: "green" },
+    { name: "RAP", x: 10, y: 10, color: "red" },
+    { name: "MDU", x: 4, y: -14, color: "purple" }
+];
+
+function showQuestion(){
+    const quiz = document.getElementById("quiz");
+    const status = document.getElementById("status");
+    quiz.innerHTML = "";
+
+    // Fortschritt
+    status.innerHTML = `Frage ${currentQuestion+1}/${questions.length} | Aktuelle Ausrichtung: X=${pos.x}, Y=${pos.y}`;
+
+    if(currentQuestion >= questions.length){
+        drawCompass();
+        return;
+    }
+
+    const q = questions[currentQuestion];
+
+    const title = document.createElement("h3");
+    title.innerText = q.text;
+    quiz.appendChild(title);
+
+    // Antworten
+    q.answers.forEach(a=>{
+        const btn = document.createElement("button");
+        btn.innerText = a.text;
+        btn.onclick = ()=>{
+            history.push({...pos}); // aktuelle Position speichern
+            pos.x += a.x;
+            pos.y += a.y;
+            currentQuestion++;
+            drawCompass(); // Diagramm nach jeder Antwort aktualisieren
+            showQuestion();
+        };
+        quiz.appendChild(btn);
+    });
+
+    // Zurückbutton
+    if(currentQuestion>0){
+        const back = document.createElement("button");
+        back.innerText = "Zurück";
+        back.onclick = ()=>{
+            currentQuestion--;
+            let last = history.pop();
+            if(last) pos = last;
+            drawCompass();
+            showQuestion();
+        };
+        quiz.appendChild(back);
+    }
+
+    drawCompass(); // Diagramm beim Anzeigen der Frage
+}
+
+function drawCompass(){
+    const canvas = document.getElementById("compass");
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0,0,400,400);
+
+    // Achsen
+    ctx.beginPath();
+    ctx.moveTo(200,0);
+    ctx.lineTo(200,400);
+    ctx.moveTo(0,200);
+    ctx.lineTo(400,200);
+    ctx.stroke();
+
+    // Parteien
+    parties.forEach(p=>{
+        let x = 200 + p.x*10;
+        let y = 200 - p.y*10;
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(x,y,6,0,Math.PI*2);
+        ctx.fill();
+        ctx.fillText(p.name,x+8,y);
+    });
+
+    // Spielerpunkt
+    let px = 200 + pos.x*10;
+    let py = 200 - pos.y*10;
+    ctx.fillStyle = "black";
+    ctx.beginPath();
+    ctx.arc(px,py,8,0,Math.PI*2);
+    ctx.fill();
+
+    // Achsenlabels
+    ctx.fillText("Links",10,210);
+    ctx.fillText("Rechts",350,210);
+    ctx.fillText("Autoritär",210,20);
+    ctx.fillText("Libertär",210,390);
+
+    // Nächste Partei
+    let closest = parties.reduce((a,b)=>{
+        return distance(pos,a)<distance(pos,b)?a:b;
+    });
+    ctx.fillText("Nächste Partei: "+closest.name,120,380);
+}
+
+function distance(p1,p2){
+    return Math.sqrt((p1.x-p2.x)**2+(p1.y-p2.y)**2);
+}
+
+showQuestion();
+</script>
+
+</body>
+</html>
