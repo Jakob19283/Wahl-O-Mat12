@@ -53,6 +53,9 @@
     }
 
     canvas {
+        width: 100%;
+        height: auto;
+        max-width: 400px;
         margin-top: 20px;
         border: 1px solid #ccc;
     }
@@ -69,7 +72,7 @@
     </div>
     <div id="quiz"></div>
     <div id="status"></div>
-    <canvas id="compass" width="400" height="400"></canvas>
+    <canvas id="compass"></canvas>
 </div>
 
 <script>
@@ -227,6 +230,10 @@ function showQuestion(){
 function drawCompass(){
     const canvas = document.getElementById("compass");
     const ctx = canvas.getContext("2d");
+
+    // 👉 dynamische Größe
+    canvas.width = canvas.offsetWidth;
+    canvas.height = canvas.offsetWidth;
     ctx.clearRect(0,0,400,400);
 
     // Achsen
